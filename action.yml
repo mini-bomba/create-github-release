@@ -1,0 +1,38 @@
+name: "Create Github Release"
+description: "A GitHub Action for creating and/or overwriting a GitHub release"
+inputs:
+  token:
+    description: "Token used for creating/editing releases"
+    required: true
+  tag:
+    description: "Tag to create/move and use for the release"
+    required: true
+  target_commit:
+    description: "Commit, branch or tag the tag should be created from/moved to"
+    required: false
+  prerelease:
+    description: "Should the release be marked as a prerelease?"
+    required: false
+  draft:
+    description: "Should the release be marked as a draft?"
+    required: false
+  name:
+    description: "Name of the release"
+    required: false
+  body:
+    description: "Description of the release"
+    required: false
+  files:
+    description: "Files to attach; newline seperated, recursive globbing supported"
+    required: false
+  fail_on_no_files:
+    description: "Should the action fail if none of the file globs match?"
+    required: false
+    default: "false"
+  clear_attachments:
+    description: "Should all existing attachments be deleted before uploading new files?"
+    required: false
+    default: "true"
+runs:
+  using: "docker"
+  image: "Dockerfile"
