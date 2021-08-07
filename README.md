@@ -1,5 +1,5 @@
-# create-github-release
-A GitHub Action for creating and/or overwriting a GitHub release
+# Create/Update Github Release
+An Action for creating and/or overwriting a GitHub release
 
 ## What does this thing do?
 This action can be used to automatically publish and/or update GitHub releases after 

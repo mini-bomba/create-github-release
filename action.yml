@@ -1,5 +1,5 @@
-name: "Create Github Release"
-description: "A GitHub Action for creating and/or overwriting a GitHub release"
+name: "Create/Update Github Release"
+description: "An Action for creating and/or overwriting a GitHub release"
 inputs:
   token:
     description: "Token used for creating/editing releases"
