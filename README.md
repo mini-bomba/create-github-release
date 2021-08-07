@@ -73,7 +73,7 @@ jobs:
     # would go here
     #
       - name: Release the new binaries
-        uses: mini-bomba/create-github-release@v1
+        uses: mini-bomba/create-github-release@v1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "latest"
