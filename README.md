@@ -18,7 +18,7 @@ It is made in python + docker... cause that's the languages I know
 ### Input variables this action takes
 
 Input Name | Description
-------------------------
+-----------|------------
 token | **Required.** The token this action should use for accessing the GitHub API. Most often you'll want to set this to `${{ secrets.GITHUB_TOKEN }}`
 tag | **Required.** Name of the tag for the release.
 name | **Required for new releases.** The title of the release. If not set, the title will not be changed... unless the release does not exist; then it'll fail
