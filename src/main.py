@@ -2,6 +2,7 @@ import requests.exceptions
 from github import Github
 import os
 import glob
+import time
 import subprocess
 
 # Read inputs & put them into variables
@@ -163,6 +164,7 @@ if release is not None:
                     if retry < 3:
                         print(f"::warning::⚠️ Got a connection error while trying to upload asset {file} "
                               f"(attempt {retry}), retrying. Error details: {type(e).__name__}: {e}")
+                        time.sleep(2)
                         for asset in release.get_assets():
                             if asset.state == "new":
                                 print(f"🗑 Deleting partially uploaded asset {asset.name}")
@@ -186,6 +188,7 @@ else:
                     if retry < 3:
                         print(f"::warning::⚠️ Got a connection error while trying to upload asset {file} "
                               f"(attempt {retry}), retrying. Error details: {type(e).__name__}: {e}")
+                        time.sleep(2)
                         for asset in release.get_assets():
                             if asset.state == "new":
                                 print(f"🗑 Deleting partially uploaded asset {asset.name}")
