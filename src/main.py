@@ -1,6 +1,7 @@
 import requests.exceptions
-from github import Github
+from github import Github, GithubException
 import os
+import os.path
 import glob
 import time
 import subprocess
@@ -160,14 +161,16 @@ if release is not None:
                     release.upload_asset(file)
                     print(f"✅ Uploaded {file}")
                     break
-                except requests.exceptions.ConnectionError as e:
+                except (requests.exceptions.ConnectionError, GithubException) as e:
+                    if isinstance(e, GithubException) and e.status != 422:
+                        raise
                     if retry < 3:
                         print(f"::warning::⚠️ Got a connection error while trying to upload asset {file} "
                               f"(attempt {retry}), retrying. Error details: {type(e).__name__}: {e}")
                         time.sleep(2)
                         for asset in release.get_assets():
-                            if asset.state == "new":
-                                print(f"🗑 Deleting partially uploaded asset {asset.name}")
+                            if asset.name == os.path.basename(file):
+                                print(f"🗑 Deleting duplicate asset {asset.name}")
                                 asset.delete_asset()
                     else:
                         print(f"::error::❌ Could not upload asset {file} due to connection errors! "
@@ -184,14 +187,16 @@ else:
                     release.upload_asset(file)
                     print(f"✅ Uploaded {file}")
                     break
-                except requests.exceptions.ConnectionError as e:
+                except (requests.exceptions.ConnectionError, GithubException) as e:
+                    if isinstance(e, GithubException) and e.status != 422:
+                        raise
                     if retry < 3:
                         print(f"::warning::⚠️ Got a connection error while trying to upload asset {file} "
                               f"(attempt {retry}), retrying. Error details: {type(e).__name__}: {e}")
                         time.sleep(2)
                         for asset in release.get_assets():
-                            if asset.state == "new":
-                                print(f"🗑 Deleting partially uploaded asset {asset.name}")
+                            if asset.name == os.path.basename(file):
+                                print(f"🗑 Deleting duplicate asset {asset.name}")
                                 asset.delete_asset()
                     else:
                         print(f"::error::❌ Could not upload asset {file} due to connection errors! "
