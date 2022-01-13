@@ -1,3 +1,4 @@
+import requests.exceptions
 from github import Github
 import os
 import glob
@@ -143,29 +144,55 @@ if gitproc.returncode != 0:
 print("::group::📦 Creating/Updating the release...")
 if release is not None:
     if clear_attachments:
-        print("::group::🗑 Removing existing attachments...")
+        print("🗑 Removing existing attachments...")
         for asset in release.get_assets():
             asset_name = asset.name
             asset.delete_asset()
             print(f"✅ Deleted {asset_name}")
-        print("::endgroup::")
     print("📝 Updating data...")
     release.update_release(name, body, draft, prerelease)
     if len(files) > 0:
-        print("::group::📨 Uploading new assets...")
+        print("📨 Uploading new assets...")
         for file in files:
-            release.upload_asset(file)
-            print(f"✅ Uploaded {file}")
-        print("::endgroup::")
-    print("::endgroup::")
+            for retry in range(1, 4):
+                try:
+                    release.upload_asset(file)
+                    print(f"✅ Uploaded {file}")
+                    break
+                except requests.exceptions.ConnectionError as e:
+                    if retry < 3:
+                        print(f"::warning::⚠️ Got a connection error while trying to upload asset {file} "
+                              f"(attempt {retry}), retrying. Error details: {type(e).__name__}: {e}")
+                        for asset in release.get_assets():
+                            if asset.state == "new":
+                                print(f"🗑 Deleting partially uploaded asset {asset.name}")
+                                asset.delete_asset()
+                    else:
+                        print(f"::error::❌ Could not upload asset {file} due to connection errors! "
+                              f"Error details: {type(e).__name__}: {e}")
+                        raise
 else:
     print("📝 Creating new release...")
     release = repo.create_git_release(tag_name, name, body, draft, prerelease)
     if len(files) > 0:
-        print("::group::📨 Uploading assets...")
+        print("📨 Uploading assets...")
         for file in files:
-            release.upload_asset(file)
-            print(f"✅ Uploaded {file}")
-        print("::endgroup::")
-    print("::endgroup::")
+            for retry in range(1, 4):
+                try:
+                    release.upload_asset(file)
+                    print(f"✅ Uploaded {file}")
+                    break
+                except requests.exceptions.ConnectionError as e:
+                    if retry < 3:
+                        print(f"::warning::⚠️ Got a connection error while trying to upload asset {file} "
+                              f"(attempt {retry}), retrying. Error details: {type(e).__name__}: {e}")
+                        for asset in release.get_assets():
+                            if asset.state == "new":
+                                print(f"🗑 Deleting partially uploaded asset {asset.name}")
+                                asset.delete_asset()
+                    else:
+                        print(f"::error::❌ Could not upload asset {file} due to connection errors! "
+                              f"Error details: {type(e).__name__}: {e}")
+                        raise
+print("::endgroup::")
 print("👌😎 Release created!")
