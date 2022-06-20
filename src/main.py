@@ -6,17 +6,37 @@ import glob
 import time
 import subprocess
 
+def check_input(key: str) -> bool:
+    """
+    Checks if a given key was passed in as an input variable
+    """
+    return f'INPUT_{key}' in os.environ and os.environ[f'INPUT_{key}'] != ""
+
+def get_boolean(key: str) -> bool:
+    """
+    Parses an environment variable as a boolean
+    """
+    env = os.environ[f'INPUT_{key}'].lower()
+    if env == "true":
+        return True
+    elif env == "false":
+        return False
+    else:
+        print(f"::error::❌ Invalid '{key.lower()}' input argument: '{os.environ['INPUT_{key}']}'")
+        exit(1)
+    
+
 # Read inputs & put them into variables
-if os.environ['INPUT_TOKEN'] == "":
+if not check_input("TOKEN"):
     print("::error::❌ Missing required input: token")
     exit(1)
 token = os.environ['INPUT_TOKEN']
-if os.environ['INPUT_TAG'] == "":
+if not check_input("TAG"):
     print("::error::❌ Missing required input: tag")
     exit(1)
 tag_name = os.environ['INPUT_TAG']
 
-if os.environ['INPUT_TARGET_COMMIT'] != "":
+if check_input("TARGET_COMMIT"):
     target_commit = os.environ['INPUT_TARGET_COMMIT']
     proc = subprocess.Popen(['git', 'rev-parse', target_commit], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
@@ -33,38 +53,28 @@ if os.environ['INPUT_TARGET_COMMIT'] != "":
 else:
     target_commit = os.environ['GITHUB_SHA']
 
-if os.environ['INPUT_PRERELEASE'] == "":
+if not check_input("PRERELEASE"):
     prerelease = None
-elif os.environ['INPUT_PRERELEASE'].lower() == "true":
-    prerelease = True
-elif os.environ['INPUT_PRERELEASE'].lower() == "false":
-    prerelease = False
 else:
-    print(f"::error::❌ Invalid 'prerelease' input argument: '{os.environ['INPUT_PRERELEASE']}'")
-    exit(1)
+    prerelease = get_boolean("PRERELEASE")
 
-if os.environ['INPUT_DRAFT'] == "":
+if not check_input("DRAFT"):
     draft = None
-elif os.environ['INPUT_DRAFT'].lower() == "true":
-    draft = True
-elif os.environ['INPUT_DRAFT'].lower() == "false":
-    draft = False
 else:
-    print(f"::error::❌ Invalid 'draft' input argument: '{os.environ['INPUT_DRAFT']}'")
-    exit(1)
+    draft = get_boolean("DRAFT")
 
-if os.environ['INPUT_NAME'] == "":
+if not check_input("NAME"):
     name = None
 else:
     name = os.environ['INPUT_NAME']
 
-if os.environ['INPUT_BODY'] == "":
+if not check_input("BODY"):
     body = None
 else:
     body = os.environ['INPUT_BODY']
 
 files = []
-if os.environ['INPUT_FILES'] != "":
+if check_input("FILES"):
     for file in os.environ['INPUT_FILES'].split("\n"):
         file = file.strip()
         if len(file) <= 0:
@@ -75,27 +85,19 @@ if os.environ['INPUT_FILES'] != "":
         else:
             print(f"::debug::📁 {len(matches)} files matched glob '{file}': '{', '.join(matches)}'")
         files += matches
-    if os.environ['INPUT_FAIL_ON_NO_FILES'].lower() == "true":
-        if len(files) <= 0:
-            print("::error::❌ No file globs matched!")
-            exit(1)
-    elif os.environ['INPUT_FAIL_ON_NO_FILES'].lower() == "false":
+    if len(files) > 0:
         pass
-    else:
-        print(f"::error::❌ Invalid 'fail_on_no_files' input argument: '{os.environ['INPUT_PRERELEASE']}'")
+    elif not check_input("FAIL_ON_NO_FILES"):
+        pass
+    elif get_boolean("FAIL_ON_NO_FILES"):
+        print("::error::❌ No file globs matched!")
         exit(1)
 
-if os.environ['INPUT_CLEAR_ATTACHMENTS'].lower() == "true":
-    clear_attachments = True
-elif os.environ['INPUT_CLEAR_ATTACHMENTS'].lower() == "false":
-    clear_attachments = False
-else:
-    print(f"::error::❌ Invalid 'clear_attachments' input argument: '{os.environ['INPUT_CLEAR_ATTACHMENTS']}'")
-    exit(1)
+clear_attachments = get_boolean("CLEAR_ATTACHMENTS") if check_input("CLEAR_ATTACHMENTS") else True
 
 
 # Create Github object
-github = Github(base_url=f"{os.environ['GITHUB_API_URL']}",
+github = Github(base_url=os.environ['GITHUB_API_URL'],
                 login_or_token=os.environ['INPUT_TOKEN'],
                 user_agent="mini-bomba/create-github-release")
 
