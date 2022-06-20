@@ -106,6 +106,8 @@ in your workflows.
 
 The images are built for any version tag and any commit on the main branch.
 Note that commit images are tagged with the first 7 characters of the commit hash.
+The `main` tag points to the latest, non-failing commit on the main branch.
+The `latest` tag points to the latest release.
 See the package page for more info.
 
 The images should work in the same way as the action, no further changes to the workflow should be required.
