@@ -1,10 +1,11 @@
 FROM python:3.9.6-slim-buster
 
+# Install git
+RUN apt-get update && apt-get install git -y
+# Install python deps
 COPY requirements.txt /requirements.txt
-COPY src /src
-
 RUN pip install -r /requirements.txt
-RUN apt-get update
-RUN apt-get install git -y
+# Copy the script into the container
+COPY src /src
 
 ENTRYPOINT ["python", "/src/main.py"]
