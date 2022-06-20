@@ -73,7 +73,7 @@ jobs:
     # would go here
     #
       - name: Release the new binaries
-        uses: mini-bomba/create-github-release@v1.0.0
+        uses: mini-bomba/create-github-release@v1.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "latest"
@@ -89,4 +89,23 @@ jobs:
             build/*.exe
           clear_attachments: true
 ```
+## Using the ghcr.io image instead of building on demand
+I provide automatically-built docker images via Gihub Packages, which are compatible with any workflows using the action.
+If my action takes too long to build on demand for you, or if you have issues with multiple copies cluttering up your
+selfhosted runner's disk space, you can use the prebuilt images instead.
 
+To replace the action with the prebuilt image, simply replace
+```yaml
+uses: mini-bomba/create-github-release@v1.1.0
+```
+with
+```yaml
+uses: docker://ghcr.io/mini-bomba/create-github-release@v1.1.0
+```
+in your workflows.
+
+The images are built for any version tag and any commit on the main branch.
+Note that commit images are tagged with the first 7 characters of the commit hash.
+See the package page for more info.
+
+The images should work in the same way as the action, no further changes to the workflow should be required.

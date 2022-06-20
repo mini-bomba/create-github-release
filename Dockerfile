@@ -1,4 +1,5 @@
 FROM python:3.9.6-slim-buster
+LABEL org.opencontainers.image.source=https://github.com/mini-bomba/create-github-release
 
 # Install git
 RUN apt-get update && apt-get install git -y --no-install-recommends
