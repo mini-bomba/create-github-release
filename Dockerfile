@@ -1,7 +1,7 @@
 FROM python:3.9.6-slim-buster
 
 # Install git
-RUN apt-get update && apt-get install git -y
+RUN apt-get update && apt-get install git -y --no-install-recommends
 # Install python deps
 COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
