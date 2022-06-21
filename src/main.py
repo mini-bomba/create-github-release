@@ -1,5 +1,6 @@
 import requests.exceptions
-from github import Github, GithubException
+from github import Github
+from github.GithubException import GithubException, UnknownObjectException
 import os
 import os.path
 import glob
@@ -106,7 +107,11 @@ repo = github.get_repo(os.environ['GITHUB_REPOSITORY'])
 
 # Check current release state
 print("👀 Checking current state of the release")
-release = repo.get_release(tag_name)
+release = None
+try:
+    release = repo.get_release(tag_name)
+except UnknownObjectException:
+    release = None
 
 if release is not None:
     print("👌 Release found, copying missing input data")
