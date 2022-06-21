@@ -100,7 +100,7 @@ uses: mini-bomba/create-github-release@v1.1.0
 ```
 with
 ```yaml
-uses: docker://ghcr.io/mini-bomba/create-github-release@v1.1.0
+uses: docker://ghcr.io/mini-bomba/create-github-release:v1.1.0
 ```
 in your workflows.
 
