@@ -132,7 +132,7 @@ else:
 
 # Create/move tag
 print("::group::🏷️ Creating/Moving the tag...")
-gitproc = subprocess.Popen(["git", "tag", "-f" tag_name, target_commit],
+gitproc = subprocess.Popen(["git", "tag", "-f", tag_name, target_commit],
                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 out, _ = gitproc.communicate()
 print("::stop-commands::git-output")
