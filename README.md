@@ -73,7 +73,7 @@ jobs:
     # would go here
     #
       - name: Release the new binaries
-        uses: mini-bomba/create-github-release@v1.1.0
+        uses: mini-bomba/create-github-release@v1.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "latest"
@@ -96,11 +96,11 @@ selfhosted runner's disk space, you can use the prebuilt images instead.
 
 To replace the action with the prebuilt image, simply replace
 ```yaml
-uses: mini-bomba/create-github-release@v1.1.0
+uses: mini-bomba/create-github-release@v1.1.1
 ```
 with
 ```yaml
-uses: docker://ghcr.io/mini-bomba/create-github-release:v1.1.0
+uses: docker://ghcr.io/mini-bomba/create-github-release:v1.1.1
 ```
 in your workflows.
 
