@@ -58,6 +58,10 @@ if not check_input("TAG"):
     exit(1)
 tag_name = os.environ['INPUT_TAG']
 
+# A workaround for the "dubious ownership" error
+print('::debug::😩 Attempting a workaround for the "dubious ownership" git error')
+run_command(["git", "config", "--global", "--add", "safe.directory", "/github/workspace"])
+
 if check_input("TARGET_COMMIT"):
     target_commit = os.environ['INPUT_TARGET_COMMIT']
     proc = subprocess.Popen(['git', 'rev-parse', target_commit], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
