@@ -6,6 +6,7 @@ import os.path
 import glob
 import time
 import subprocess
+import secrets
 
 def check_input(key: str) -> bool:
     """
@@ -25,7 +26,27 @@ def get_boolean(key: str) -> bool:
     else:
         print(f"::error::❌ Invalid '{key.lower()}' input argument: '{os.environ['INPUT_{key}']}'")
         exit(1)
-    
+
+def run_command(cmd: list[str], end_group: bool = False):
+    """
+    Runs a given command, surrounding output with ::stop-commands::
+    :param cmd: command to run
+    :param end_group: whether to run "::endgroup::" before exiting
+    """
+    token = secrets.token_urlsafe(32)
+    print(f"::debug::Running {cmd}")
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, _ = proc.communicate()
+    print(f"::stop-commands::{token}")
+    print(out.decode())
+    if proc.returncode != 0:
+        print(f"::{token}::")
+        if end_group:
+            print("::endgroup::")
+        print(f"::error::❌ Command {cmd} returned with non-zero exit code!")
+        exit(proc.returncode)
+    print(f"::{token}::")
+
 
 # Read inputs & put them into variables
 if not check_input("TOKEN"):
@@ -96,7 +117,6 @@ if check_input("FILES"):
 
 clear_attachments = get_boolean("CLEAR_ATTACHMENTS") if check_input("CLEAR_ATTACHMENTS") else True
 
-
 # Create Github object
 github = Github(base_url=os.environ['GITHUB_API_URL'],
                 login_or_token=os.environ['INPUT_TOKEN'],
@@ -132,24 +152,8 @@ else:
 
 # Create/move tag
 print("::group::🏷️ Creating/Moving the tag...")
-gitproc = subprocess.Popen(["git", "tag", "-f", tag_name, target_commit],
-                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-out, _ = gitproc.communicate()
-print("::stop-commands::git-output")
-print(out.decode())
-if gitproc.returncode != 0:
-    print("::git-output::")
-    print("::endgroup::")
-    print(f"::error::❌ Command 'git tag -f {tag_name} {target_commit}' returned with non-zero exit code!")
-    exit(gitproc.returncode)
-gitproc = subprocess.Popen(["git", "push", "--force", "origin", tag_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-out, _ = gitproc.communicate()
-print(out.decode())
-print("::git-output::")
-print("::endgroup::")
-if gitproc.returncode != 0:
-    print(f"::error::❌ Command 'git push --force origin {tag_name}' returned with non-zero exit code!")
-    exit(gitproc.returncode)
+run_command(["git", "tag", "-f", tag_name, target_commit], end_group=True)
+run_command(["git", "push", "--force", "origin", tag_name], end_group=True)
 
 print("::group::📦 Creating/Updating the release...")
 if release is not None:
