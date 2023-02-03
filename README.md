@@ -17,18 +17,18 @@ It is made in python + docker... cause that's the languages I know
 
 ### Input variables this action takes
 
-Input Name | Description
------------|------------
-token | **Required.** The token this action should use for accessing the GitHub API. Most often you'll want to set this to `${{ secrets.GITHUB_TOKEN }}`
-tag | **Required.** Name of the tag for the release.
-name | **Required for new releases.** The title of the release. If not set, the title will not be changed... unless the release does not exist; then it'll fail
-description | **Required for new releases.** The description of the release. If not set, the description will not be changed... unless the release does not exist; then it'll fail
-prerelease | **Optional.** Whether the release should be marked as a prerelease. Accepted values: true, false. Defaults to false for new releases, keeps the current setting for existing releases
-draft | **Optional.** Whether the release should be marked as a draft. Accepted values: true, false. Defaults to false for new releases, keeps the current setting for existing releases
-target_commit | **Optional.** Commit, branch or tag (or anything `git rev-parse` can resolve) the release tag should be created at or moved to. Defaults to `$GITHUB_SHA`, aka. the "current" commit.
-files | **Optional.** A newline seperated list of files to attach to the release. Recursive globbing is supported (anything the python `glob.glob()` function can resolve).
-fail_on_no_files | **Optional.** Should the action fail if no filename globs match? Does nothing if no files were listed. Accepted values: true, false. Default: false.
-clear_attachments | **Optional.** Should we remove all existing attachments from the release before adding new ones? Accepted values: true, false. Default: false.
+| Input Name        | Description                                                                                                                                                                           |
+|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| token             | **Required.** The token this action should use for accessing the GitHub API. Most often you'll want to set this to `${{ secrets.GITHUB_TOKEN }}`                                      |
+| tag               | **Required.** Name of the tag for the release.                                                                                                                                        |
+| name              | **Required for new releases.** The title of the release. If not set, the title will not be changed... unless the release does not exist; then it'll fail                              |
+| description       | **Required for new releases.** The description of the release. If not set, the description will not be changed... unless the release does not exist; then it'll fail                  |
+| prerelease        | **Optional.** Whether the release should be marked as a prerelease. Accepted values: true, false. Defaults to false for new releases, keeps the current setting for existing releases |
+| draft             | **Optional.** Whether the release should be marked as a draft. Accepted values: true, false. Defaults to false for new releases, keeps the current setting for existing releases      |
+| target_commit     | **Optional.** Commit, branch or tag (or anything `git rev-parse` can resolve) the release tag should be created at or moved to. Defaults to `$GITHUB_SHA`, aka. the "current" commit. |
+| files             | **Optional.** A newline seperated list of files to attach to the release. Recursive globbing is supported (anything the python `glob.glob()` function can resolve).                   |
+| fail_on_no_files  | **Optional.** Should the action fail if no filename globs match? Does nothing if no files were listed. Accepted values: true, false. Default: false.                                  |
+| clear_attachments | **Optional.** Should we remove all existing attachments from the release before adding new ones? Accepted values: true, false. Default: false.                                        |
 
 ### Environment variables this action uses
 Only default environment variables: `$GITHUB_SHA`, `$GITHUB_API_URL` and `$GITHUB_REPOSITORY`
@@ -73,7 +73,7 @@ jobs:
     # would go here
     #
       - name: Release the new binaries
-        uses: mini-bomba/create-github-release@v1.1.2
+        uses: mini-bomba/create-github-release@v1.1.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "latest"
@@ -96,11 +96,11 @@ selfhosted runner's disk space, you can use the prebuilt images instead.
 
 To replace the action with the prebuilt image, simply replace
 ```yaml
-uses: mini-bomba/create-github-release@v1.1.2
+uses: mini-bomba/create-github-release@v1.1.3
 ```
 with
 ```yaml
-uses: docker://ghcr.io/mini-bomba/create-github-release:v1.1.2
+uses: docker://ghcr.io/mini-bomba/create-github-release:v1.1.3
 ```
 in your workflows.
 
