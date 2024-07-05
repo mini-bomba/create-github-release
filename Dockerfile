@@ -1,8 +1,8 @@
-FROM python:3.9.6-slim-buster
+FROM python:3.12-alpine
 LABEL org.opencontainers.image.source=https://github.com/mini-bomba/create-github-release
 
 # Install git
-RUN apt-get update && apt-get install git -y --no-install-recommends
+RUN apk add --no-cache git
 # Install python deps
 COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
