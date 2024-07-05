@@ -8,11 +8,13 @@ import time
 import subprocess
 import secrets
 
+
 def check_input(key: str) -> bool:
     """
     Checks if a given key was passed in as an input variable
     """
     return f'INPUT_{key}' in os.environ and os.environ[f'INPUT_{key}'] != ""
+
 
 def get_boolean(key: str) -> bool:
     """
@@ -26,6 +28,7 @@ def get_boolean(key: str) -> bool:
     else:
         print(f"::error::❌ Invalid '{key.lower()}' input argument: '{os.environ['INPUT_{key}']}'")
         exit(1)
+
 
 def run_command(cmd: list[str], end_group: bool = False):
     """
@@ -62,22 +65,46 @@ tag_name = os.environ['INPUT_TAG']
 print('::debug::😩 Attempting a workaround for the "dubious ownership" git error')
 run_command(["git", "config", "--global", "--add", "safe.directory", "/github/workspace"])
 
-if check_input("TARGET_COMMIT"):
-    target_commit = os.environ['INPUT_TARGET_COMMIT']
-    proc = subprocess.Popen(['git', 'rev-parse', target_commit], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = proc.communicate()
-    if proc.returncode != 0:
-        print(f"::error::❌ Failed to resolve ref '{target_commit}' (from input 'target_commit')")
-        err = err.decode()
-        for line in err.split("\n"):
-            print(f"::error::{line}")
-        exit(proc.returncode)
-    out = out.decode().strip()
-    if out != target_commit:
-        print(f"🔬 Resolved reference '{target_commit}' to commit '{out}")
-    target_commit = out
-else:
-    target_commit = os.environ['GITHUB_SHA']
+skip_tag_creation = get_boolean("SKIP_TAG_CREATION") if check_input("SKIP_TAG_CREATION") else False
+target_commit = None
+
+if not skip_tag_creation:
+    if check_input("TARGET_COMMIT"):
+        target_commit = os.environ['INPUT_TARGET_COMMIT']
+        if target_commit == tag_name:
+            print("::warning::⚠️ target_commit and tag inputs are the same - tag creation will be skipped "
+                  "(set skip_tag_creation to true to silence this warning)")
+            skip_tag_creation = True
+            target_commit = None
+        else:
+            proc = subprocess.Popen(['git', 'rev-parse', target_commit], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = proc.communicate()
+            if proc.returncode != 0:
+                print(f"::error::❌ Failed to resolve ref '{target_commit}' (from input 'target_commit')")
+                err = err.decode()
+                for line in err.split("\n"):
+                    print(f"::error::{line}")
+                exit(proc.returncode)
+            out = out.decode().strip()
+            if out != target_commit:
+                print(f"🔬 Resolved reference '{target_commit}' to commit '{out}'")
+            target_commit = out
+    else:
+        target_commit = os.environ['GITHUB_SHA']
+        print(f"::debug::🔬 Attempting to resolve tag '{tag_name}' to check if it points to target_commit")
+        proc = subprocess.Popen(['git', 'rev-parse', tag_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        if proc.returncode != 0:
+            print(f"::debug::🔬 Tag '{tag_name}' either doesn't exist yet, or wasn't checked out")
+        else:
+            out = out.decode().strip()
+            print(f"::debug::🔬 Resolved tag '{tag_name}' to commit '{out}'")
+            if out == target_commit:
+                print(f"::warning::⚠️ Tag '{tag_name}' exists and already points to target commit '{target_commit}' - "
+                      "tag creation will be skipped (set skip_tag_creation to true to silence this warning)")
+                skip_tag_creation = True
+                target_commit = None
+
 
 if not check_input("PRERELEASE"):
     prerelease = None
@@ -155,9 +182,13 @@ else:
         exit(1)
 
 # Create/move tag
-print("::group::🏷️ Creating/Moving the tag...")
-run_command(["git", "tag", "-f", tag_name, target_commit], end_group=True)
-run_command(["git", "push", "--force", "origin", tag_name], end_group=True)
+if skip_tag_creation:
+    print("⏩ Skipping tag creation")
+else:
+    print("::group::🏷️ Creating/Moving the tag...")
+    run_command(["git", "tag", "-f", tag_name, target_commit], end_group=True)
+    run_command(["git", "push", "--force", "origin", tag_name], end_group=True)
+    print("::endgroup::")
 
 print("::group::📦 Creating/Updating the release...")
 if release is not None:

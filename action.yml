@@ -33,6 +33,10 @@ inputs:
     description: "Should all existing attachments be deleted before uploading new files?"
     required: false
     default: "true"
+  skip_tag_creation:
+    description: "Should the tag creation/modification be skipped? Set to true if the tag already exists and points to the correct commit"
+    required: false
+    default: "false"
 runs:
   using: "docker"
   image: "Dockerfile"
